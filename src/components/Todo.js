@@ -1,31 +1,35 @@
-import React from 'react';
+import React, {Component} from 'react';
 
-function Todo({text, id, todos, setTodos}) {
+class Todo extends Component {
+
+    // Constructor
+    constructor(props) {
+        super(props);
+    }
 
     // Logic
-    const deleteListener = () => {
-        //console.log(id);
-        setTodos(todos.filter(el => el.id !== id));
+    deleteListener = () => {
+        this.props.setFilteredTodos(this.props.id);
     };
 
-    const completeListener = () => {
-       setTodos(todos.map(el => {
-           return el.id === id ? {...el, completed: !el.completed} : el;
-       }));
+    completeListener = () => {
+        this.props.setTodos(this.props.id);
     };
 
     // Render
-    return(
-        <div className="todo">
-            <li className={`todo-item ${todos.find(el => el.id === id).completed ? "completed" : ""}`}>{text}</li>
-            <button onClick={completeListener} className="complete-btn">
-                <i className="fas fa-check"></i>
-            </button>
-            <button onClick={deleteListener} className="trash-btn">
-                <i className="fas fa-trash"></i>
-            </button>
-        </div>
-    );
+    render() {
+        return(
+            <div className="todo">
+                <li className={`todo-item ${this.props.filteredTodos.find(el => el.id === this.props.id).completed ? "completed" : ""}`}>{this.props.text}</li>
+                <button onClick={this.completeListener} className="complete-btn">
+                    <i className="fas fa-check"></i>
+                </button>
+                <button onClick={this.deleteListener} className="trash-btn">
+                    <i className="fas fa-trash"></i>
+                </button>
+            </div>
+        );
+    }
 };
 
 export default Todo;

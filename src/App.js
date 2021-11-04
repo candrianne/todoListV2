@@ -1,66 +1,114 @@
-import React, {useState, useEffect} from 'react';
+import React, { Component } from 'react';
 import './App.css';
 import Form from './components/Form';
 import TodoList from './components/TodoList';
 
-function App() {
+class App extends Component {
 
-  // State
-  const [inputText, setInputText] = useState("");
-  const [todos, setTodos] = useState([]);
-  const [status, setStatus] = useState('all');
-  const [filteredTodos, setFilteredTodos] = useState([]);
+  // Contrsuctor
+  constructor(props) {
+    super(props);
+    this.state = {
+      inputText: "",
+      todos: [],
+      status: "all",
+      filteredTodos: []
+    }
+  }
 
-  useEffect(() => {
-    getLocalStorage();
-  }, []);
-  
-  useEffect(() => {
-    filterListener();
-    saveToLocalStorage();
-  }, [todos, status]);
+  // setters
+
+  // use this form to prevent calling the "bind" function in the constructor
+  /*setCustomState = (stateProperty, value) => {
+    console.log(this.state);
+    console.log(stateProperty, value);
+    this.setState({stateProperty: value}); 
+    console.log(this.state);
+    console.log(this.state[stateProperty]); 
+  }*/
+  setInputText = (value) => {
+    this.setState({...this.state, inputText: value});
+  }
+
+  setTodos = (id) => {
+    id ?
+    this.setState({...this.state, todos: this.state.filteredTodos.map(el => {
+      return el.id === id ? {...el, completed: !el.completed} : el;
+    })}) : 
+    this.setState({
+      ...this.state, 
+      todos: [...this.state.todos, {text : this.state.inputText, completed: false, id: Math.random() * 100000}]
+    });
+  }
+
+  setStatus = (value) => {
+    this.setState({...this.state, status: value});
+  }
+
+  setFilteredTodos = (id) => {
+    this.setState({
+      ...this.state, 
+      filteredTodos: this.state.filteredTodos.filter((el) => el.id !== id)
+    });
+  }
+
+  componentDidMount() {
+    console.log("mount");
+    this.getLocalStorage();
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    console.log("update");
+    if(prevState.todos !== this.state.todos || prevState.status !== this.state.status) {
+      this.filterListener();
+      this.saveToLocalStorage();
+    }
+  }
 
   // Logic
-  const filterListener = () => {
-    switch(status) {
+  filterListener() {
+    switch(this.state.status) {
       case 'completed' :
-        setFilteredTodos(todos.filter(todo => todo.completed));
+        this.setState({...this.state, filteredTodos: this.state.todos.filter(todo => todo.completed)});
         break;
       case 'uncompleted':
-        setFilteredTodos(todos.filter(todo => !todo.completed));
+        this.setState({...this.state, filteredTodos: this.state.todos.filter(todo => !todo.completed)});
         break;
       default:
-        setFilteredTodos(todos);
+        this.setState({...this.state, filteredTodos: this.state.todos});
     }
   };
 
-  const saveToLocalStorage = () => {
-    localStorage.setItem('todos', JSON.stringify(todos));
+  saveToLocalStorage() {
+    localStorage.setItem('todos', JSON.stringify(this.state.todos));
   }
 
-  const getLocalStorage = () => {
+  getLocalStorage() {
     if(localStorage.getItem('todos') === null)
         localStorage.setItem('todos', JSON.stringify([]))
     else 
-        setTodos(JSON.parse(localStorage.getItem('todos')));
+        this.setState({...this.state, todos: JSON.parse(localStorage.getItem('todos'))});
   };
 
   // Render
-  return (
-    <div className="App">
-      <header>
-        <h1>todo list</h1>
-      </header>
-      <Form 
-        todos={todos} 
-        setTodos={setTodos} 
-        inputText={inputText} 
-        setInputText={setInputText}
-        setStatus={setStatus}
-      />
-      <TodoList todos={filteredTodos} setTodos={setTodos}/>
-    </div>
-  );
+  render() {
+    return (
+      <div className="App">
+        <header>
+          <h1>{this.state.inputText}</h1>
+        </header>
+        <Form 
+          todos={this.state.todos} 
+          setTodos={this.setTodos}
+          inputText={this.state.inputText} 
+          setInputText={this.setInputText}
+          status={this.state.status}
+          setStatus={this.setStatus}
+        />
+        <TodoList filteredTodos={this.state.filteredTodos} setFilteredTodos={this.setFilteredTodos} todos={this.state.todos} setTodos={this.setTodos}/>
+      </div>
+    );
+  }
 }
 
 export default App;
